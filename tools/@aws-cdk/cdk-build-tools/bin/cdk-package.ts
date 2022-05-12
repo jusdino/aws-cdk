@@ -47,7 +47,7 @@ async function main() {
     const command = [args['jsii-pacmak'],
       args.verbose ? '-vvv' : '-v',
       ...args.targets ? flatMap(args.targets, (target: string) => ['-t', target]) : [],
-      '-o', outdir];
+      '-o', path.resolve(process.cwd(), outdir)];
     await shell(command, { timers });
   } else {
     const target = path.join(outdir, 'js');
