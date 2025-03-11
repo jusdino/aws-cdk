@@ -14,6 +14,7 @@ export * from './model';
 export * from './requestvalidator';
 export * from './authorizer';
 export * from './json-schema';
+export * from './json-schema-loader';
 export * from './domain-name';
 export * from './base-path-mapping';
 export * from './cors';
