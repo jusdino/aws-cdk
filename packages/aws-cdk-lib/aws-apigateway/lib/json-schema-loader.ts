@@ -8,22 +8,21 @@ export class JsonSchemaLoader {
   /**
    * Convert an external JSON Schema object to a CDK JsonSchema
    * @param obj The JSON Schema object to convert
-   * @param restApiId Optional REST API ID for converting $ref to canonical form
    */
-  public static fromObject(obj: object, restApiId?: string): JsonSchema {
+  public static fromObject(obj: object): JsonSchema {
     const transformed = { ...obj };
-    this.transformAdditionalItems(transformed, restApiId);
-    this.transformAdditionalProperties(transformed, restApiId);
-    this.transformComposition(transformed, restApiId);
-    this.transformContains(transformed, restApiId);
-    this.transformDefinitions(transformed, restApiId);
-    this.transformDependencies(transformed, restApiId);
-    this.transformItems(transformed, restApiId);
-    this.transformPatternProperties(transformed, restApiId);
-    this.transformProperties(transformed, restApiId);
-    this.transformPropertyNames(transformed, restApiId);
+    this.transformAdditionalItems(transformed);
+    this.transformAdditionalProperties(transformed);
+    this.transformComposition(transformed);
+    this.transformContains(transformed);
+    this.transformDefinitions(transformed);
+    this.transformDependencies(transformed);
+    this.transformItems(transformed);
+    this.transformPatternProperties(transformed);
+    this.transformProperties(transformed);
+    this.transformPropertyNames(transformed);
     this.transformType(transformed);
-    this.transformPrefixItems(transformed, restApiId);
+    this.transformPrefixItems(transformed);
 
     this.transformObjectProperties(transformed);
     return transformed as JsonSchema;
@@ -51,25 +50,17 @@ export class JsonSchemaLoader {
     $schema: 'schema',
   };
 
-  private static transformComposition(obj: Record<string, any>, restApiId?: string): void {
+  private static transformComposition(obj: Record<string, any>): void {
     for (const key of ['allOf', 'oneOf', 'anyOf']) {
       if (Array.isArray(obj[key])) {
         obj[key] = obj[key].map((elem: any) =>
-          typeof elem === 'object' ? this.fromObject(elem, restApiId) : elem,
+          typeof elem === 'object' ? this.fromObject(elem) : elem,
         );
       }
     }
 
     if (obj.not && typeof obj.not === 'object') {
-      obj.not = this.fromObject(obj.not, restApiId);
-    }
-
-    if (obj.$ref && restApiId) {
-      // Model reference must be in canonical form
-      obj.$ref = obj.$ref.replace(
-        '#/components/schemas/',
-        `https://apigateway.amazonaws.com/restapis/${restApiId}/models/`,
-      );
+      obj.not = this.fromObject(obj.not);
     }
   }
 
@@ -105,78 +96,78 @@ export class JsonSchemaLoader {
     }
   }
 
-  private static transformProperties(obj: Record<string, any>, restApiId?: string): void {
+  private static transformProperties(obj: Record<string, any>): void {
     if (obj.properties) {
       Object.entries(obj.properties).forEach(([key, value]) => {
         if (typeof value === 'object') {
-          obj.properties[key] = this.fromObject(value!, restApiId);
+          obj.properties[key] = this.fromObject(value!);
         }
       });
     }
   }
 
-  private static transformPatternProperties(obj: Record<string, any>, restApiId?: string): void {
+  private static transformPatternProperties(obj: Record<string, any>): void {
     if (obj.patternProperties) {
       Object.entries(obj.patternProperties).forEach(([key, value]) => {
         if (typeof value === 'object') {
-          obj.patternProperties[key] = this.fromObject(value!, restApiId);
+          obj.patternProperties[key] = this.fromObject(value!);
         }
       });
     }
   }
 
-  private static transformAdditionalProperties(obj: Record<string, any>, restApiId?: string): void {
+  private static transformAdditionalProperties(obj: Record<string, any>): void {
     if (obj.additionalProperties && typeof obj.additionalProperties === 'object') {
-      obj.additionalProperties = this.fromObject(obj.additionalProperties, restApiId);
+      obj.additionalProperties = this.fromObject(obj.additionalProperties);
     }
   }
 
-  private static transformItems(obj: Record<string, any>, restApiId?: string): void {
+  private static transformItems(obj: Record<string, any>): void {
     if (!obj.items) {
       return;
     }
 
     if (Array.isArray(obj.items)) {
       obj.items = obj.items.map((item: any) =>
-        typeof item === 'object' ? this.fromObject(item, restApiId) : item,
+        typeof item === 'object' ? this.fromObject(item) : item,
       );
     } else if (typeof obj.items === 'object') {
       // In Draft 4 - 2019-09, tuple validation was handled by an alternate form of the items keyword.
       // When items was an array of schemas instead of a single schema, it behaved the way prefixItems behaves.
       // https://json-schema.org/understanding-json-schema/reference/array
-      obj.items = this.fromObject(obj.items, restApiId);
+      obj.items = this.fromObject(obj.items);
     }
   }
 
-  private static transformPropertyNames(obj: Record<string, any>, restApiId?: string): void {
+  private static transformPropertyNames(obj: Record<string, any>): void {
     if (obj.propertyNames && typeof obj.propertyNames === 'object') {
-      obj.propertyNames = this.fromObject(obj.propertyNames, restApiId);
+      obj.propertyNames = this.fromObject(obj.propertyNames);
     }
   }
 
-  private static transformPrefixItems(obj: Record<string, any>, restApiId?: string): void {
+  private static transformPrefixItems(obj: Record<string, any>): void {
     if (Array.isArray(obj.prefixItems)) {
       obj.prefixItems = obj.prefixItems.map((item: any) =>
-        typeof item === 'object' ? this.fromObject(item, restApiId) : item,
+        typeof item === 'object' ? this.fromObject(item) : item,
       );
     }
   }
 
-  private static transformAdditionalItems(obj: Record<string, any>, restApiId?: string): void {
+  private static transformAdditionalItems(obj: Record<string, any>): void {
     // Draft-04 expects boolean | JsonSchema
     if (obj.additionalItems && typeof obj.additionalItems === 'object') {
       // cdk JsonSchema interface expects an array
-      obj.additionalItems = [this.fromObject(obj.additionalItems, restApiId)];
+      obj.additionalItems = [this.fromObject(obj.additionalItems)];
     }
   }
 
-  private static transformContains(obj: Record<string, any>, restApiId?: string): void {
+  private static transformContains(obj: Record<string, any>): void {
     if (obj.contains && typeof obj.contains === 'object') {
-      obj.contains = this.fromObject(obj.contains, restApiId);
+      obj.contains = this.fromObject(obj.contains);
     }
   }
 
-  private static transformDependencies(obj: Record<string, any>, restApiId?: string): void {
+  private static transformDependencies(obj: Record<string, any>): void {
     // Previously to Draft 2019-09, dependentRequired and dependentSchemas were one keyword called dependencies.
     // If the dependency value was an array, it would behave like dependentRequired and if the dependency value
     // was a schema, it would behave like dependentSchema.
@@ -188,19 +179,19 @@ export class JsonSchemaLoader {
     Object.entries(obj.dependencies).forEach(([key, value]) => {
       if (Array.isArray(value)) {
         obj.dependencies[key] = value.map((item: any) =>
-          typeof item === 'object' ? this.fromObject(item, restApiId) : item,
+          typeof item === 'object' ? this.fromObject(item) : item,
         );
       } else if (typeof value === 'object') {
-        obj.dependencies[key] = this.fromObject(value!, restApiId);
+        obj.dependencies[key] = this.fromObject(value!);
       }
     });
   }
 
-  private static transformDefinitions(obj: Record<string, any>, restApiId?: string): void {
+  private static transformDefinitions(obj: Record<string, any>): void {
     if (obj.definitions) {
       Object.entries(obj.definitions).forEach(([key, value]) => {
         if (typeof value === 'object') {
-          obj.definitions[key] = this.fromObject(value!, restApiId);
+          obj.definitions[key] = this.fromObject(value!);
         }
       });
     }

@@ -265,16 +265,6 @@ describe('JsonSchemaLoader', () => {
     expect(result.properties?.workPhone.ref).toBe('#/definitions/phone');
   });
 
-  test('transforms refs with rest api id', () => {
-    const input = {
-      $ref: '#/components/schemas/Pet',
-    };
-
-    const result = JsonSchemaLoader.fromObject(input, 'abc123');
-
-    expect(result.ref).toBe('https://apigateway.amazonaws.com/restapis/abc123/models/Pet');
-  });
-
   test('throws error for unknown type', () => {
     const input = {
       type: 'unknown',
